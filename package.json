@@ -2,7 +2,7 @@
   "name": "c-plus-plus-plus",
   "displayName": "c+++",
   "description": "A simpler C++-like language that compiles and runs automatically in VS Code",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "c-plus-plus-plus",
   "engines": {
     "vscode": "^1.85.0"
@@ -30,6 +30,13 @@
       }
     ],
     "grammars": [],
+    "iconThemes": [
+      {
+        "id": "cppplus-icons",
+        "label": "c+++ Icons (Seti + c+++)",
+        "path": "./icons/cppplus-icon-theme.json"
+      }
+    ],
     "commands": [
       {
         "command": "cplus.runFile",
