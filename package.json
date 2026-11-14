@@ -2,7 +2,7 @@
   "name": "c-plus-plus-plus",
   "displayName": "c+++",
   "description": "A simpler C++-like language that compiles and runs automatically in VS Code",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "c-plus-plus-plus",
   "engines": {
     "vscode": "^1.85.0"
@@ -45,6 +45,54 @@
       {
         "command": "cplus.compileFile",
         "title": "c+++: Compile (show JS output)"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "cppplus",
+        "label": "c+++ Runner",
+        "program": "./out/debugAdapter.js",
+        "runtime": "node",
+        "languages": [
+          "c+++"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [
+              "program"
+            ],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Path to the .c+++ file to run"
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "cppplus",
+            "request": "launch",
+            "name": "Run c+++ file",
+            "program": "${file}"
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "c+++ launch",
+            "description": "Run a c+++ file",
+            "body": {
+              "type": "cppplus",
+              "request": "launch",
+              "name": "Run ${fileBasename}",
+              "program": "${file}"
+            }
+          }
+        ]
       }
     ]
   },

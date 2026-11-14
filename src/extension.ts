@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import * as vm from 'vm';
 import { compile } from './compiler';
+import { runJs } from './runner';
 
 let channel: vscode.OutputChannel;
 let diagnostics: vscode.DiagnosticCollection;
@@ -72,7 +72,13 @@ async function compileAndRun(doc: vscode.TextDocument, showJs: boolean) {
   }
 
   try {
-    await runJs(result.js ?? '', doc);
+    await runJs(result.js ?? '', {
+      print: (...args) => channel.appendLine(args.join(' ')),
+      input: async (prompt) => {
+        const v = await vscode.window.showInputBox({ prompt: prompt ?? '', value: '' });
+        return v ?? '';
+      }
+    });
   } catch (err: any) {
     const msg = err?.stack?.split('\n').slice(0, 4).join('\n') ?? String(err);
     channel.appendLine(`Runtime error:\n${msg}`);
@@ -84,41 +90,4 @@ function errorRange(doc: vscode.TextDocument, line?: number): vscode.Range {
   const lineNum = Math.max(0, (line ?? 1) - 1);
   const text = doc.lineAt(Math.min(lineNum, doc.lineCount - 1)).text;
   return new vscode.Range(lineNum, 0, lineNum, text.length);
-}
-
-async function runJs(js: string, doc: vscode.TextDocument) {
-  const builtins: Record<string, any> = {
-    print: (...args: any[]) => channel.appendLine(args.map(String).join(' ')),
-    len: (x: any) => {
-      if (x == null) throw new Error('len(): value is null');
-      if (typeof x === 'string' || Array.isArray(x)) return x.length;
-      if (typeof x === 'object') return Object.keys(x).length;
-      throw new Error(`len(): cannot get length of ${typeof x}`);
-    },
-    push: (arr: any[], ...items: any[]) => { arr.push(...items); return arr; },
-    pop: (arr: any[]) => arr.pop(),
-    type: (x: any) => x === null ? 'null' : Array.isArray(x) ? 'array' : typeof x,
-    str: (x: any) => String(x),
-    num: (x: any) => Number(x),
-    abs: Math.abs, floor: Math.floor, ceil: Math.ceil, round: Math.round,
-    sqrt: Math.sqrt, min: Math.min, max: Math.max, random: Math.random,
-    input: async (prompt?: string) => {
-      const v = await vscode.window.showInputBox({ prompt: prompt ?? '', value: '' });
-      return v ?? '';
-    },
-    exit: (code = 0) => { throw new ExitSignal(code); }
-  };
-
-  class ExitSignal extends Error {
-    constructor(public code: number) { super(`exit ${code}`); }
-  }
-
-  const context = vm.createContext({ ...builtins, console });
-  try {
-    const result = vm.runInContext(js, context, { filename: doc.fileName + '.js' });
-    if (result instanceof Promise) await result;
-  } catch (err: any) {
-    if (err instanceof ExitSignal) return;
-    throw err;
-  }
 }
