@@ -1,0 +1,29 @@
+// c+++ hello world — save this file and it compiles & runs automatically
+
+fn greet(name) {
+    print("Hello, " + name + "!")
+}
+
+fn add(a, b) {
+    return a + b
+}
+
+fn main() {
+    let x = add(2, 3)
+    print("2 + 3 =", x)
+
+    greet("world")
+
+    let nums = [1, 2, 3, 4, 5]
+    for (n in nums) {
+        if (n % 2 == 0) {
+            print(n, "is even")
+        }
+    }
+
+    let i = 0
+    while (i < 3) {
+        print("loop", i)
+        i++
+    }
+}

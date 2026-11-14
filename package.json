@@ -1,0 +1,53 @@
+{
+  "name": "c-plus-plus-plus",
+  "displayName": "c+++",
+  "description": "A simpler C++-like language that compiles and runs automatically in VS Code",
+  "version": "0.1.0",
+  "publisher": "c-plus-plus-plus",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:c+++"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "c+++",
+        "aliases": [
+          "C+++",
+          "cppplus"
+        ],
+        "extensions": [
+          ".c+++"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [],
+    "commands": [
+      {
+        "command": "cplus.runFile",
+        "title": "c+++: Run File"
+      },
+      {
+        "command": "cplus.compileFile",
+        "title": "c+++: Compile (show JS output)"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.4.0"
+  }
+}
