@@ -101,7 +101,7 @@ async function runJs(js: string, doc: vscode.TextDocument) {
     str: (x: any) => String(x),
     num: (x: any) => Number(x),
     abs: Math.abs, floor: Math.floor, ceil: Math.ceil, round: Math.round,
-    sqrt: Math.sqrt, min: Math.min, max: Math.max,
+    sqrt: Math.sqrt, min: Math.min, max: Math.max, random: Math.random,
     input: async (prompt?: string) => {
       const v = await vscode.window.showInputBox({ prompt: prompt ?? '', value: '' });
       return v ?? '';

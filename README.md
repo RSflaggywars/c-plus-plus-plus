@@ -56,7 +56,7 @@ assignment `=`, parentheses, arrays `[1, 2, 3]`, strings `"..."` or `'...'`,
 | `type(x)` | `"number"`, `"string"`, `"array"`, `"object"`, `"boolean"`, `"null"` |
 | `str(x)` / `num(x)` | convert to string / number |
 | `input(prompt)` | ask the user for input (returns a string) |
-| `abs, floor, ceil, round, sqrt, min, max` | math helpers |
+| `abs, floor, ceil, round, sqrt, min, max, random` | math helpers |
 | `exit(code)` | exit the program |
 
 ## How it works
