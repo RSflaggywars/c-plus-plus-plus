@@ -33,11 +33,13 @@ class Emitter {
 
   stmt(s: Stmt) {
     switch (s.kind) {
-      case 'fn':
-        this.line(`function ${s.name}(${s.params.join(', ')}) {`);
+      case 'fn': {
+        const isAsync = containsAwait(s.body);
+        this.line(`${isAsync ? 'async ' : ''}function ${s.name}(${s.params.join(', ')}) {`);
         this.block(s.body);
         this.line('}');
         break;
+      }
       case 'let':
         this.line(`let ${s.name}${s.init ? ' = ' + this.expr(s.init) : ''};`);
         break;
@@ -112,6 +114,8 @@ class Emitter {
         return `(${this.expr(e.left)} ${e.op} ${this.expr(e.right)})`;
       case 'unary':
         return `(${e.op}${this.expr(e.operand)})`;
+      case 'await':
+        return `(await ${this.expr(e.operand)})`;
       case 'postfix':
         return `(${this.expr(e.operand)}${e.op})`;
       case 'assign': {
@@ -128,6 +132,55 @@ class Emitter {
         return `(${this.expr(e.obj)})[${this.expr(e.index)}]`;
     }
   }
+}
+
+function exprHasAwait(e: Expr): boolean {
+  switch (e.kind) {
+    case 'await': return true;
+    case 'binary': return exprHasAwait(e.left) || exprHasAwait(e.right);
+    case 'unary': case 'postfix': return exprHasAwait(e.operand);
+    case 'assign': return exprHasAwait(e.target) || exprHasAwait(e.value);
+    case 'call': return exprHasAwait(e.callee) || e.args.some(exprHasAwait);
+    case 'member': return exprHasAwait(e.obj);
+    case 'index': return exprHasAwait(e.obj) || exprHasAwait(e.index);
+    case 'array': return e.items.some(exprHasAwait);
+    default: return false;
+  }
+}
+
+function stmtsHaveAwait(stmts: Stmt[]): boolean {
+  for (const s of stmts) {
+    switch (s.kind) {
+      case 'fn': break; // nested fn is checked on its own
+      case 'let': if (s.init && exprHasAwait(s.init)) return true; break;
+      case 'expr': if (exprHasAwait(s.expr)) return true; break;
+      case 'if':
+        if (exprHasAwait(s.cond)) return true;
+        if (stmtsHaveAwait(s.then)) return true;
+        if (s.else_ && stmtsHaveAwait(s.else_)) return true;
+        break;
+      case 'while':
+        if (exprHasAwait(s.cond) || stmtsHaveAwait(s.body)) return true;
+        break;
+      case 'for':
+        if ((s.init && s.init.kind === 'let' && s.init.init && exprHasAwait(s.init.init)) ||
+            (s.init && s.init.kind === 'expr' && exprHasAwait(s.init.expr)) ||
+            (s.cond && exprHasAwait(s.cond)) ||
+            (s.update && exprHasAwait(s.update)) ||
+            stmtsHaveAwait(s.body)) return true;
+        break;
+      case 'forin':
+        if (exprHasAwait(s.iterable) || stmtsHaveAwait(s.body)) return true;
+        break;
+      case 'return': if (s.value && exprHasAwait(s.value)) return true; break;
+      case 'block': if (stmtsHaveAwait(s.body)) return true; break;
+    }
+  }
+  return false;
+}
+
+function containsAwait(body: Stmt[]): boolean {
+  return stmtsHaveAwait(body);
 }
 
 export function compile(source: string): CompileResult {

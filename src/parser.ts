@@ -22,6 +22,7 @@ export type Expr =
   | { kind: 'array'; items: Expr[] }
   | { kind: 'binary'; op: string; left: Expr; right: Expr }
   | { kind: 'unary'; op: string; operand: Expr }
+  | { kind: 'await'; operand: Expr }
   | { kind: 'assign'; op: string; target: Expr; value: Expr }
   | { kind: 'call'; callee: Expr; args: Expr[] }
   | { kind: 'member'; obj: Expr; prop: string }
@@ -288,6 +289,10 @@ export class Parser {
 
   private parseUnary(): Expr {
     const t = this.peek();
+    if (t.type === 'kw' && t.value === 'await') {
+      this.next();
+      return { kind: 'await', operand: this.parseUnary() };
+    }
     if (t.type === 'punct' && ['!', '-', '+', '++', '--'].includes(t.value)) {
       this.next();
       return { kind: 'unary', op: t.value, operand: this.parseUnary() };

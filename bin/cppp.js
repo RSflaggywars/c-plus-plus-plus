@@ -7,9 +7,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const readline = require('readline');
 const { compile } = require('../out/compiler');
-const { runJs } = require('../out/runner');
+const { runJs, readLineSync } = require('../out/runner');
 
 const USAGE = `cppp — c+++ command line tool
 
@@ -54,19 +53,14 @@ async function doRun(file) {
     console.error(`${file}:${result.line}: ${result.error}`);
     process.exit(1);
   }
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   try {
     await runJs(result.js, {
       print: (...args) => console.log(args.join(' ')),
-      input: (prompt) => new Promise(resolve => {
-        rl.question(prompt ?? '', ans => resolve(ans));
-      })
+      input: (prompt) => readLineSync(prompt)
     });
   } catch (err) {
     console.error(`${file}: runtime error: ${err && err.stack ? err.stack.split('\n').slice(0, 4).join('\n') : err}`);
     process.exitCode = 1;
-  } finally {
-    rl.close();
   }
 }
 

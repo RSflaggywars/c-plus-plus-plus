@@ -14,7 +14,7 @@ export interface Token {
 
 const KEYWORDS = new Set([
   'fn', 'let', 'if', 'else', 'while', 'for', 'in', 'return',
-  'break', 'continue', 'true', 'false'
+  'break', 'continue', 'true', 'false', 'await'
 ]);
 
 const PUNCTUATORS = [
@@ -89,6 +89,22 @@ export function lex(source: string): Token[] {
         const c = source[j];
         if (c === '\\') {
           const next = source[j + 1];
+          if (next === 'x') {
+            const hex = source.slice(j + 2, j + 4);
+            if (/^[0-9a-fA-F]{2}$/.test(hex)) {
+              value += String.fromCharCode(parseInt(hex, 16));
+              j += 4;
+              continue;
+            }
+          }
+          if (next === 'u') {
+            const hex = source.slice(j + 2, j + 6);
+            if (/^[0-9a-fA-F]{4}$/.test(hex)) {
+              value += String.fromCharCode(parseInt(hex, 16));
+              j += 6;
+              continue;
+            }
+          }
           const escapes: Record<string, string> = {
             n: '\n', t: '\t', r: '\r', '\\': '\\', '"': '"', "'": "'", '0': '\0'
           };
